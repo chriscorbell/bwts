@@ -1,5 +1,6 @@
 /* ── Design tokens (shadcn/ui-inspired, AMOLED black) ── */
 :root {
+  color-scheme: dark;
   --background: #000000;
   --foreground: #fafafa;
   --card: #0a0a0a;

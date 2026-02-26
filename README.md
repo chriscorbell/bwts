@@ -1,4 +1,4 @@
-# Bitwarden Tailscale Regex Builder
+# bwts
 
 Small web app that converts a concrete service URL like:
 
@@ -13,32 +13,6 @@ into a Bitwarden-compatible regular expression URI that keeps matching when your
 - Keeps the same port requirement.
 - Treats the provided path as a prefix (matches deeper paths, query strings, and hash fragments).
 - Outputs a regex string ready for Bitwarden's **Regular Expression** URI match detection.
-
-## Run locally
-
-Since this is static HTML/CSS/JS, any static server works.
-
-```bash
-python3 -m http.server 8080
-```
-
-Then open `http://localhost:8080`.
-
-## Deploy with Docker
-
-Build:
-
-```bash
-docker build -t bw-tailscale-regex .
-```
-
-Run:
-
-```bash
-docker run --rm -p 8080:80 bw-tailscale-regex
-```
-
-Open `http://localhost:8080`.
 
 ## Bitwarden usage
 

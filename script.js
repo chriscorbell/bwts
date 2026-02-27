@@ -7,17 +7,25 @@ const copyLabel = document.getElementById("copy-label");
 const regexOutput = document.getElementById("regex-output");
 const statusNode = document.getElementById("status");
 const schemeSwitch = document.getElementById("allow-both-schemes");
+const exactMatchSwitch = document.getElementById("exact-match");
 
 const OCTET_REGEX = "(?:25[0-5]|2[0-4]\\d|1?\\d?\\d)";
 
 /* ── Switch toggle ── */
-schemeSwitch.addEventListener("click", () => {
-  const next = schemeSwitch.getAttribute("aria-checked") !== "true";
-  schemeSwitch.setAttribute("aria-checked", String(next));
-});
+function toggleSwitchState(button) {
+  const next = button.getAttribute("aria-checked") !== "true";
+  button.setAttribute("aria-checked", String(next));
+}
+
+schemeSwitch.addEventListener("click", () => toggleSwitchState(schemeSwitch));
+exactMatchSwitch.addEventListener("click", () => toggleSwitchState(exactMatchSwitch));
 
 function isSchemeSwitchOn() {
   return schemeSwitch.getAttribute("aria-checked") === "true";
+}
+
+function isExactMatchOn() {
+  return exactMatchSwitch.getAttribute("aria-checked") === "true";
 }
 
 /* ── Status helpers ── */
@@ -41,16 +49,7 @@ function buildHostPattern(hostname) {
   return escapeRegex(hostname);
 }
 
-function buildPathPrefixPattern(pathname) {
-  if (!pathname || pathname === "/") {
-    return "(?:\\/.*)?";
-  }
-
-  const escapedPath = escapeRegex(pathname);
-  return `${escapedPath}(?:[\\/?#].*)?`;
-}
-
-function buildBitwardenRegex(rawUrl, allowAnyScheme) {
+function buildBitwardenRegex(rawUrl, allowAnyScheme, exactMatch) {
   const parsed = new URL(rawUrl);
 
   if (!parsed.hostname) {
@@ -66,9 +65,10 @@ function buildBitwardenRegex(rawUrl, allowAnyScheme) {
     : `${escapeRegex(parsed.protocol)}\\/\\/`;
   const hostPattern = buildHostPattern(parsed.hostname);
   const portPattern = parsed.port ? `:${escapeRegex(parsed.port)}` : "";
-  const pathPattern = buildPathPrefixPattern(parsed.pathname);
+  const pathQueryHashPattern = escapeRegex(parsed.pathname + parsed.search + parsed.hash);
+  const trailingPattern = exactMatch ? "" : ".*";
 
-  return `^${schemePattern}${hostPattern}${portPattern}${pathPattern}$`;
+  return `^${schemePattern}${hostPattern}${portPattern}${pathQueryHashPattern}${trailingPattern}$`;
 }
 
 /* ── Generate ── */
@@ -81,7 +81,7 @@ function handleGenerate() {
   }
 
   try {
-    const regex = buildBitwardenRegex(trimmed, isSchemeSwitchOn());
+    const regex = buildBitwardenRegex(trimmed, isSchemeSwitchOn(), isExactMatchOn());
     regexOutput.value = regex;
     setStatus("Regex generated.", "success");
   } catch (error) {
